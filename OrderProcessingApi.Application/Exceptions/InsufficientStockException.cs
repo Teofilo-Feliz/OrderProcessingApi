@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 namespace OrderProcessingApi.Application.Exceptions
 {
-    public class StockInsuficienteException : Exception
+    public class InsufficientStockException : Exception
     {
-        public IReadOnlyList<string> ProductosRechazados { get; }
+        public IReadOnlyList<string> RejectedProducts { get; }
 
-        public StockInsuficienteException(IEnumerable<string> productosRechazados)
+        public InsufficientStockException(IEnumerable<string> rejectedProducts)
             : base("No fue posible completar el pedido por problemas de stock.")
         {
-            ProductosRechazados = productosRechazados.ToList();
+            RejectedProducts = rejectedProducts.ToList();
 
-            if (ProductosRechazados.Count == 0)
+            if (RejectedProducts.Count == 0)
             {
                 throw new ArgumentException(
                     "Debes especificar al menos un producto rechazado.",
-                    nameof(productosRechazados));
+                    nameof(rejectedProducts));
             }
         }
     }

@@ -1,23 +1,17 @@
-﻿using OrderProcessingApi.Domain.Entities;
+using OrderProcessingApi.Domain.Entities;
 
 namespace OrderProcessingApi.Application.Interfaces;
 
 public interface IOrderRepository
 {
-    Task<T> ExecuteInTransactionAsync<T>(
-        Func<CancellationToken, Task<T>> operation,
+    Task AddOrderAsync(
+        Pedido order,
         CancellationToken cancellationToken = default);
 
-    Task<List<Producto>> ObtenerProductosAsync(
-        IEnumerable<int> productosIds,
+    Task<List<Pedido>> GetOrdersAsync(
         CancellationToken cancellationToken = default);
 
-    Task<int> DescontarStockAsync(
-        int productoId,
-        int cantidad,
-        CancellationToken cancellationToken = default);
-
-    Task GuardarPedidoAsync(
-        Pedido pedido,
+    Task<Pedido?> GetOrderByIdAsync(
+        int id,
         CancellationToken cancellationToken = default);
 }

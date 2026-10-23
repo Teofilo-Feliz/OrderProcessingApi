@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore;
 using OrderProcessingApi.Domain.Entities;
 using OrderProcessingApi.Infrastructure.Configuration;
 using OrderProcessingApi.Application.Interfaces;
@@ -16,60 +15,32 @@ namespace OrderProcessingApi.Infrastructure.Repository.OrderRepository.Services
             _context = context;
         }
 
-        public async Task<T> ExecuteInTransactionAsync<T>(
-            Func<CancellationToken, Task<T>> operation,
+        public async Task AddOrderAsync(
+            Pedido order,
             CancellationToken cancellationToken = default)
         {
-            await using IDbContextTransaction transaction =
-                await _context.Database.BeginTransactionAsync(cancellationToken);
-
-            try
-            {
-                T result = await operation(cancellationToken);
-
-                await transaction.CommitAsync(cancellationToken);
-
-                return result;
-            }
-            catch
-            {
-                await transaction.RollbackAsync(CancellationToken.None);
-                throw;
-            }
+            await _context.Pedidos.AddAsync(order, cancellationToken);
         }
 
-        public async Task<List<Producto>> ObtenerProductosAsync(
-            IEnumerable<int> productosIds,
+        public async Task<List<Pedido>> GetOrdersAsync(
             CancellationToken cancellationToken = default)
         {
-            var ids = productosIds.Distinct().ToList();
-
-            return await _context.Productos
-                .Where(p => ids.Contains(p.Id))
+            return await _context.Pedidos
+                .AsNoTracking()
+                .OrderByDescending(p => p.FechaPedido)
+                .ThenByDescending(p => p.Id)
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<int> DescontarStockAsync(
-            int productoId,
-            int cantidad,
+        public async Task<Pedido?> GetOrderByIdAsync(
+            int id,
             CancellationToken cancellationToken = default)
         {
-            return await _context.Productos
-                .Where(p => p.Id == productoId && p.Stock >= cantidad)
-                .ExecuteUpdateAsync(
-                    setters => setters.SetProperty(
-                        p => p.Stock,
-                        p => p.Stock - cantidad),
-                    cancellationToken);
-        }
-
-        public async Task GuardarPedidoAsync(
-            Pedido pedido,
-            CancellationToken cancellationToken = default)
-        {
-            await _context.Pedidos.AddAsync(pedido, cancellationToken);
-
-            await _context.SaveChangesAsync(cancellationToken);
+            return await _context.Pedidos
+                .AsNoTracking()
+                .Include(p => p.PedidoDetalles)
+                    .ThenInclude(d => d.Producto)
+                .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
         }
 
     }
