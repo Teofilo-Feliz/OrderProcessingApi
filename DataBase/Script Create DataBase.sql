@@ -1,13 +1,13 @@
 USE master;
 GO
 
-IF DB_ID(N'OrderProcessingApiDB') IS NULL
+IF DB_ID(N'Pedido') IS NULL
 BEGIN
-    CREATE DATABASE OrderProcessingApiDB;
+    CREATE DATABASE Pedido;
 END
 GO
 
-USE OrderProcessingApiDB;
+USE Pedido;
 GO
 
 IF NOT EXISTS

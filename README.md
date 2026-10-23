@@ -6,6 +6,10 @@ Este proyecto es una API REST para procesar pedidos de un comercio electrónico 
 
 Para el desarrollo utilicé .NET 8 con ASP.NET Core Web API, Entity Framework Core 8 como ORM, SQL Server como base de datos y Postman para documentar y probar los endpoints.
 
+## Contenido del repositorio
+
+En la raíz del repositorio se encuentra la solución OrderProcessingApi.slnx con los cuatro proyectos de la API. La carpeta DataBase contiene los scripts SQL para crear la base de datos e insertar los datos de prueba. La carpeta Collections OrderProcessingApi contiene la colección de Postman con las peticiones para probar todos los endpoints.
+
 ## Arquitectura
 
 Elegí una arquitectura por capas basada en los principios de Clean Architecture. La idea es que las dependencias apunten hacia el dominio y que la lógica de negocio no dependa de Entity Framework ni de SQL Server. La solución está dividida en cuatro proyectos.
@@ -32,10 +36,10 @@ Inyección de dependencias: los servicios, repositorios y la unidad de trabajo s
 
 Los scripts están en la carpeta DataBase y se deben ejecutar en este orden:
 
-1. Script Create DataBase.sql: crea la base de datos OrderProcessingApiDB, el esquema Ventas, las tablas, las llaves foráneas, las restricciones y los índices.
+1. Script Create DataBase.sql: crea la base de datos Pedido, el esquema Ventas, las tablas, las llaves foráneas, las restricciones y los índices.
 2. InsertValues.sql: inserta los productos de prueba.
 
-Los dos scripts se pueden ejecutar más de una vez sin que den error ni dupliquen datos.
+Los dos scripts se pueden ejecutar más de una vez sin que den error ni dupliquen datos. El script de datos solo inserta los productos cuando la tabla está vacía, por lo que si se quiere volver al stock inicial después de hacer pruebas hay que eliminar la base de datos Pedido y ejecutar los dos scripts de nuevo.
 
 La base de datos tiene tres tablas dentro del esquema Ventas.
 
@@ -53,7 +57,7 @@ La cadena de conexión está en el archivo OrderProcessingApi.Api/appsettings.De
 
 ```json
 "ConnectionStrings": {
-  "DefaultConnection": "Server=localhost\\MSSQLSERVER01;Database=OrderProcessingApiDB;Trusted_Connection=True;Encrypt=True;TrustServerCertificate=True;"
+  "DefaultConnection": "Server=localhost\\MSSQLSERVER01;Database=Pedido;Trusted_Connection=True;Encrypt=True;TrustServerCertificate=True;"
 }
 ```
 
@@ -68,13 +72,13 @@ builder.Services.AddDbContext<OrderProcessingApiDbContext>(options =>
 Para correr el proyecto en otro equipo solo hay que cambiar el valor de Server por el nombre de la instancia de SQL Server que se tenga instalada. Por ejemplo, si se usa autenticación de Windows con la instancia por defecto:
 
 ```
-Server=localhost;Database=OrderProcessingApiDB;Trusted_Connection=True;Encrypt=True;TrustServerCertificate=True;
+Server=localhost;Database=Pedido;Trusted_Connection=True;Encrypt=True;TrustServerCertificate=True;
 ```
 
 Y si se usa autenticación de SQL Server:
 
 ```
-Server=localhost;Database=OrderProcessingApiDB;User Id=usuario;Password=clave;Encrypt=True;TrustServerCertificate=True;
+Server=localhost;Database=Pedido;User Id=usuario;Password=clave;Encrypt=True;TrustServerCertificate=True;
 ```
 
 La cadena está en el archivo de Development porque ese es el entorno que tienen configurado los perfiles de launchSettings.json. Si se quiere ejecutar en otro entorno hay que agregarla en el appsettings correspondiente.
@@ -98,7 +102,13 @@ También se puede ejecutar desde Visual Studio poniendo OrderProcessingApi.Api c
 
 ## Pruebas con Postman
 
-Los endpoints los documenté y probé con Postman. Para consumirlos hay que tener la API en ejecución y usar como URL base http://localhost:5022 o https://localhost:7176.
+Los endpoints los documenté y probé con Postman. La colección está en el archivo Collections OrderProcessingApi/Collections OrderProcessingApi.json y se puede importar en Postman con la opción Import.
+
+La colección está organizada en dos carpetas, Productos y Pedidos, y cada petición tiene una descripción y pruebas automáticas que validan el código de respuesta y el contenido. Se pueden ejecutar una por una o todas juntas con el Runner de Postman.
+
+La colección usa tres variables. La variable base_url tiene la URL de la API y por defecto apunta a https://localhost:7176; si Postman da error con el certificado de desarrollo se puede cambiar a http://localhost:5022 o desactivar la verificación SSL en la configuración de Postman. Las variables productoId y pedidoId se llenan automáticamente cuando se crea un producto o un pedido, y se usan en las peticiones que consultan por Id.
+
+Para ejecutar la colección completa hay que tener la API en ejecución y la base de datos con los datos de prueba. Cada vez que se ejecuta la petición de crear pedido se descuenta stock, así que después de varias ejecuciones esa petición empieza a responder 400 por stock insuficiente, que es el comportamiento esperado.
 
 En las peticiones POST el body se envía en la pestaña Body, seleccionando la opción raw y el formato JSON. El body debe ser un objeto JSON; por ejemplo, en el caso de los pedidos la lista de productos va dentro de la propiedad productos y no se envía como un arreglo suelto.
 
@@ -112,6 +122,8 @@ Los casos que probé fueron:
 6. Consultar todos los pedidos y un pedido por su Id con sus detalles, incluyendo un Id que no existe para verificar el 404.
 
 ## Endpoints
+
+Las rutas de la API las definí en inglés, igual que el resto del código, por lo que el endpoint de creación de pedidos que pide el requerimiento como POST /api/pedidos corresponde a POST /api/orders, y el de productos corresponde a /api/products.
 
 ### Productos
 

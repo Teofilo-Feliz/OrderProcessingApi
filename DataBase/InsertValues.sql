@@ -2,7 +2,7 @@
 Datos de prueba
 */
 
-USE OrderProcessingApiDB;
+USE Pedido;
 GO
 
 IF NOT EXISTS
