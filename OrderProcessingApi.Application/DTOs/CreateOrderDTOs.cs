@@ -8,5 +8,6 @@ namespace OrderProcessingApi.Application.DTOs
 {
     public record CreateOrderDTOs(
     List<CreateOrderDetailDTOs> Productos
+       
     );
 }

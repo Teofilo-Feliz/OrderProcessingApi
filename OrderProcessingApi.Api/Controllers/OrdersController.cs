@@ -6,7 +6,7 @@ using OrderProcessingApi.Application.Interfaces;
 namespace OrderProcessingApi.Api.Controllers;
 
 [ApiController]
-[Route("api/pedidos")]
+[Route("api/orders")]
 public class OrdersController : ControllerBase
 {
     private readonly IOrder _orderService;

@@ -6,7 +6,7 @@ using OrderProcessingApi.Application.Interfaces;
 namespace OrderProcessingApi.Api.Controllers;
 
 [ApiController]
-[Route("api/productos")]
+[Route("api/products")]
 public class ProductsController : ControllerBase
 {
     private readonly IProduct _productService;
